@@ -103,3 +103,8 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
+variable "ecs_execution_role_arn" {
+  description = "ARN of the ECS task execution role used for pulling images from ECR"
+  type        = string
+}

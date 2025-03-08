@@ -5,6 +5,8 @@ resource "aws_ecs_task_definition" "this" {
   cpu                      = "256"
   memory                   = "512"
 
+  execution_role_arn = var.execution_role_arn
+
   container_definitions = jsonencode([
     {
       name         = var.service_name

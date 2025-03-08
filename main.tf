@@ -23,27 +23,26 @@ module "ecr" {
   # unless you decide to define them in the ECR module’s variables.
 }
 
-# Deploy Backend Service (NestJS) on ECS
 module "backend_service" {
-  source          = "./modules/ecs-service"
-  cluster_id      = module.ecs_cluster.cluster_id
-  service_name    = "backend-service"
-  container_image = module.ecr.backend_repository_url  # Provided by ECR module
-  container_port  = var.backend_container_port
-  # Instead of private_subnets, reference public_subnets from your VPC module:
-  subnets         = module.vpc.public_subnet_ids
-  security_groups = var.backend_security_groups
+  source              = "./modules/ecs-service"
+  cluster_id          = module.ecs_cluster.cluster_id
+  service_name        = "backend-service"
+  container_image     = module.ecr.backend_repository_url
+  container_port      = var.backend_container_port
+  subnets             = module.vpc.public_subnet_ids
+  security_groups     = var.backend_security_groups
+  execution_role_arn  = var.ecs_execution_role_arn
 }
 
-# Optionally, deploy Frontend Service (NextJS) on ECS
 module "frontend_service" {
-  source          = "./modules/ecs-service"
-  cluster_id      = module.ecs_cluster.cluster_id
-  service_name    = "frontend-service"
-  container_image = module.ecr.frontend_repository_url
-  container_port  = var.frontend_container_port
-  subnets         = module.vpc.public_subnet_ids
-  security_groups = var.frontend_security_groups
+  source              = "./modules/ecs-service"
+  cluster_id          = module.ecs_cluster.cluster_id
+  service_name        = "frontend-service"
+  container_image     = module.ecr.frontend_repository_url
+  container_port      = var.frontend_container_port
+  subnets             = module.vpc.public_subnet_ids
+  security_groups     = var.frontend_security_groups
+  execution_role_arn  = var.ecs_execution_role_arn
 }
 
 # Create an RDS Database instance

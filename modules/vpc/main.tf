@@ -3,8 +3,9 @@ resource "aws_vpc" "this" {
 }
 
 resource "aws_subnet" "public" {
+  count                   = 2
   vpc_id                  = aws_vpc.this.id
-  cidr_block              = cidrsubnet(aws_vpc.this.cidr_block, 8, 0)
-  availability_zone       = var.availability_zone
+  cidr_block              = cidrsubnet(aws_vpc.this.cidr_block, 2, count.index)
+  availability_zone       = element(var.availability_zones, count.index)
   map_public_ip_on_launch = true
 }

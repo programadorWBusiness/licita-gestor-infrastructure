@@ -22,3 +22,8 @@ variable "security_groups" {
   type    = list(string)
   default = []
 }
+
+variable "execution_role_arn" {
+  description = "ARN of the ECS task execution role"
+  type        = string
+}
