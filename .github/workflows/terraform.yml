@@ -38,8 +38,8 @@ jobs:
         run: terraform validate
 
       - name: Terraform plan
-        run: terraform plan -input=false -var db_password="${{ secrets.DB_PASSWORD }}"
+        run: terraform plan -input=false -var db_password="${{ secrets.DB_PASSWORD }}" -var ecs_execution_role_arn="${{ secrets.ECS_EXECUTION_ROLE_ARN }}"
 
       - name: Terraform apply
         if: github.event_name == 'push' && github.ref_name == 'main'
-        run: terraform apply -auto-approve -input=false -var db_password="${{ secrets.DB_PASSWORD }}"
+        run: terraform apply -auto-approve -input=false -var db_password="${{ secrets.DB_PASSWORD }}" -var ecs_execution_role_arn="${{ secrets.ECS_EXECUTION_ROLE_ARN }}"
