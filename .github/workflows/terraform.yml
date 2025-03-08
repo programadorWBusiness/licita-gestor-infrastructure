@@ -38,8 +38,8 @@ jobs:
         run: terraform validate
 
       - name: Terraform plan
-        run: terraform plan
+        run: terraform plan -input=false -var db_password="${{ secrets.DB_PASSWORD }}"
 
       - name: Terraform apply
         if: github.event_name == 'push' && github.ref_name == 'main'
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -input=false -var db_password="${{ secrets.DB_PASSWORD }}"
