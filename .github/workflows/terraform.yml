@@ -10,39 +10,36 @@ on:
 
 jobs:
   terraform:
+    # Give the job permission to request an OIDC token.
+    permissions:
+      id-token: write
+      contents: read
+
     runs-on: ubuntu-latest
     steps:
-      # 1) Check out the code
       - name: Check out repo
         uses: actions/checkout@v3
 
-      # 2) Install Terraform
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.4.6 # or the version you prefer
+          terraform_version: 1.4.6
 
-      # 3) Configure AWS Credentials (OIDC)
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::533267284248:role/CI-CD-FLOW
           aws-region: us-east-1
 
-      # 4) Initialize Terraform
       - name: Terraform init
         run: terraform init
 
-      # 5) (Optional) Validate Terraform code
       - name: Terraform validate
         run: terraform validate
 
-      # 6) Terraform plan
       - name: Terraform plan
         run: terraform plan
 
-      # 7) (Optional) Terraform apply
-      # Only run on push to main, not on pull requests
       - name: Terraform apply
         if: github.event_name == 'push' && github.ref_name == 'main'
         run: terraform apply -auto-approve
