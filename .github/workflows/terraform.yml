@@ -23,7 +23,7 @@ jobs:
           terraform_version: 1.4.6 # or the version you prefer
 
       # 3) Configure AWS Credentials (OIDC)
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::533267284248:role/CI-CD-FLOW
