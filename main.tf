@@ -2,25 +2,56 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Create VPC and networking
+# -------------------------------
+# 1) VPC & Networking
+# -------------------------------
 module "vpc" {
   source     = "./modules/vpc"
   cidr_block = var.vpc_cidr
 }
 
-# Create ECS Cluster
+# -------------------------------
+# 2) ECS Cluster
+# -------------------------------
 module "ecs_cluster" {
   source      = "./modules/ecs-cluster"
   environment = var.environment
-
 }
 
-# Create ECR repositories for backend and optionally frontend images
+# -------------------------------
+# 3) ECR Repositories
+# -------------------------------
 module "ecr" {
   source      = "./modules/ecr"
   environment = var.environment
-  # No need to pass in backend_repo_name or frontend_repo_name here
-  # unless you decide to define them in the ECR module’s variables.
+  # You can pass var.backend_repo_name, etc. if needed
+}
+
+# -------------------------------
+# 4) ECS Backend Service
+#    WITHOUT ALB (public IP)
+# -------------------------------
+# We'll create a new Security Group that allows inbound from the internet.
+# If you'd rather pass in an existing SG, you can do that.
+resource "aws_security_group" "backend_public_sg" {
+  name        = "${var.environment}-backend-public-sg"
+  description = "Allow inbound HTTP (port ${var.backend_container_port}) from internet"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    description = "Allow inbound on container port"
+    from_port   = var.backend_container_port
+    to_port     = var.backend_container_port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 module "backend_service" {
@@ -29,23 +60,18 @@ module "backend_service" {
   service_name        = "backend-service"
   container_image     = module.ecr.backend_repository_url
   container_port      = var.backend_container_port
+
+  # Run in the public subnets so we can assign a public IP (no ALB).
   subnets             = module.vpc.public_subnet_ids
-  security_groups     = var.backend_security_groups
+
+  # Use the SG we just created that allows inbound from 0.0.0.0/0.
+  security_groups     = [aws_security_group.backend_public_sg.id]
   execution_role_arn  = var.ecs_execution_role_arn
 }
 
-module "frontend_service" {
-  source              = "./modules/ecs-service"
-  cluster_id          = module.ecs_cluster.cluster_id
-  service_name        = "frontend-service"
-  container_image     = module.ecr.frontend_repository_url
-  container_port      = var.frontend_container_port
-  subnets             = module.vpc.public_subnet_ids
-  security_groups     = var.frontend_security_groups
-  execution_role_arn  = var.ecs_execution_role_arn
-}
-
-# Create an RDS Database instance
+# -------------------------------
+# 5) RDS Database
+# -------------------------------
 module "rds" {
   source            = "./modules/rds"
   engine            = var.db_engine
@@ -57,4 +83,58 @@ module "rds" {
   password          = var.db_password
   subnets           = module.vpc.public_subnet_ids
   security_groups   = var.db_security_groups
+}
+
+# -------------------------------
+# 6) Amplify for Frontend
+# -------------------------------
+resource "aws_amplify_app" "frontend" {
+  name        = var.amplify_app_name
+  repository  = var.amplify_repo_url
+  oauth_token = var.github_token
+
+  # Automatically build on commits to the branch below:
+  enable_auto_build = true
+
+  environment_variables = {
+    # Example if your NestJS is on port 3000:
+    # Provide a placeholder or set once you know the ECS task’s public IP
+    REACT_APP_BACKEND_URL = "http://CHANGE_ME_LATER:3000"
+  }
+
+  tags = {
+    Environment = var.environment
+  }
+}
+
+resource "aws_amplify_branch" "frontend_main" {
+  app_id      = aws_amplify_app.frontend.id
+  branch_name = var.amplify_branch
+}
+
+resource "aws_amplify_domain_association" "frontend_domain" {
+  app_id      = aws_amplify_app.frontend.id
+  domain_name = "licitagestor.com.br"  # This domain must be in your Route53
+
+  sub_domain {
+    sub_domain_setting {
+      prefix      = "www"
+      branch_name = aws_amplify_branch.frontend_main.branch_name
+    }
+  }
+}
+
+# 1) Data source for your existing hosted zone:
+data "aws_route53_zone" "this" {
+  name         = "licitagestor.com.br."  # Must end with a dot
+  private_zone = false
+}
+
+# 2) A record pointing to your ECS public IP:
+resource "aws_route53_record" "api_backend" {
+  zone_id = data.aws_route53_zone.this.zone_id
+  name    = "api.licitagestor.com.br"
+  type    = "A"
+  ttl     = 300
+  records = ["3.211.xxx.xxx"]  # <--- The public IP found in ECS console
 }

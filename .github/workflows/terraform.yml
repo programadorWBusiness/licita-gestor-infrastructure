@@ -2,19 +2,15 @@ name: Terraform CI/CD
 
 on:
   push:
-    branches:
-      - main
+    branches: ['main']
   pull_request:
-    branches:
-      - main
+    branches: ['main']
 
 jobs:
   terraform:
-    # Give the job permission to request an OIDC token.
     permissions:
       id-token: write
       contents: read
-
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
@@ -38,8 +34,8 @@ jobs:
         run: terraform validate
 
       - name: Terraform plan
-        run: terraform plan -input=false -var db_password="${{ secrets.DB_PASSWORD }}" -var ecs_execution_role_arn="${{ secrets.ECS_EXECUTION_ROLE_ARN }}"
+        run: terraform plan -input=false \ -var db_password="${{ secrets.DB_PASSWORD }}" \ -var ecs_execution_role_arn="${{ secrets.ECS_EXECUTION_ROLE_ARN }}" \ -var github_token="${{ secrets.TOKEN_AMPLIFY }}"
 
       - name: Terraform apply
         if: github.event_name == 'push' && github.ref_name == 'main'
-        run: terraform apply -auto-approve -input=false -var db_password="${{ secrets.DB_PASSWORD }}" -var ecs_execution_role_arn="${{ secrets.ECS_EXECUTION_ROLE_ARN }}"
+        run: terraform apply -auto-approve -input=false \ -var db_password="${{ secrets.DB_PASSWORD }}" \ -var ecs_execution_role_arn="${{ secrets.ECS_EXECUTION_ROLE_ARN }}" \ -var github_token="${{ secrets.TOKEN_AMPLIFY }}"

@@ -34,3 +34,4 @@ resource "aws_ecs_service" "this" {
     security_groups = var.security_groups
   }
 }
+

@@ -36,7 +36,7 @@ variable "frontend_container_port" {
   default     = 3000
 }
 
-# Security group IDs for ECS services (set these as needed)
+# ECS Security group IDs if you wish to pass them from outside
 variable "backend_security_groups" {
   description = "List of security group IDs for the backend ECS service"
   type        = list(string)
@@ -107,4 +107,31 @@ variable "environment" {
 variable "ecs_execution_role_arn" {
   description = "ARN of the ECS task execution role used for pulling images from ECR"
   type        = string
+}
+
+# -------------------------------
+# New Amplify-related variables:
+# -------------------------------
+variable "amplify_app_name" {
+  description = "Name of the Amplify App"
+  type        = string
+  default     = "my-frontend-app"
+}
+
+variable "amplify_repo_url" {
+  description = "Git URL for your frontend repo"
+  type        = string
+  default     = "https://github.com/programadorWBusiness/licita-gestor-front"
+}
+
+variable "amplify_branch" {
+  description = "Git branch to auto-build in Amplify"
+  type        = string
+  default     = "main"
+}
+
+variable "github_token" {
+  description = "OAuth token allowing Amplify to connect to GitHub"
+  type        = string
+  sensitive   = true
 }
