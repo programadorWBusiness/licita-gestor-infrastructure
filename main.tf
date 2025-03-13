@@ -94,12 +94,12 @@ resource "aws_amplify_app" "frontend" {
   oauth_token = var.github_token
 
   # Automatically build on commits to the branch below:
-  enable_auto_build = true
+  # enable_auto_build = true
 
   environment_variables = {
     # Example if your NestJS is on port 3000:
     # Provide a placeholder or set once you know the ECS task’s public IP
-    REACT_APP_BACKEND_URL = "http://CHANGE_ME_LATER:3000"
+    REACT_APP_BACKEND_URL = "http://api.licitagestor.com.br"
   }
 
   tags = {
