@@ -37,7 +37,13 @@ jobs:
         run: |
           echo "Length of AMPLIFY_GITHUB_TOKEN: ${#AMPLIFY_GITHUB_TOKEN}"
         env:
-          AMPLIFY_GITHUB_TOKEN: ${{ secrets.AMPLIFY_GITHUB_TOKEN }}
+          AMPLIFY_GITHUB_TOKEN: ${{ secrets.DB_PASSWORD }}
+
+      - name: Debug password length
+        run: |
+          echo "Length of AMPLIFY_GITHUB_TOKEN: ${#AMPLIFY_GITHUB_TOKEN}"
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
       - name: Terraform plan
         run: |
