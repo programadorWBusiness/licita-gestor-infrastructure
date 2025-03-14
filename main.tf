@@ -116,11 +116,9 @@ resource "aws_amplify_domain_association" "frontend_domain" {
   app_id      = aws_amplify_app.frontend.id
   domain_name = "licitagestor.com.br"  # This domain must be in your Route53
 
-  sub_domain {
-    sub_domain_setting {
-      prefix      = "www"
-      branch_name = aws_amplify_branch.frontend_main.branch_name
-    }
+    sub_domain {
+    prefix      = "www"
+    branch_name = aws_amplify_branch.frontend_main.branch_name
   }
 }
 
