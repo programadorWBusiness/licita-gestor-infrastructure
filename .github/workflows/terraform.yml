@@ -33,6 +33,12 @@ jobs:
       - name: Terraform validate
         run: terraform validate
 
+      - name: Debug token length
+        run: |
+          echo "Length of AMPLIFY_GITHUB_TOKEN: ${#AMPLIFY_GITHUB_TOKEN}"
+        env:
+          AMPLIFY_GITHUB_TOKEN: ${{ secrets.AMPLIFY_GITHUB_TOKEN }}
+
       - name: Terraform plan
         run: |
           terraform plan -input=false \
@@ -44,6 +50,6 @@ jobs:
         if: github.event_name == 'push' && github.ref_name == 'main'
         run: |
           terraform apply -auto-approve -input=false \
-            -var github_token="${{ secrets.AMPLIFY_GITHUB_TOKEN }}" \
+            -var github_token="${{ secrets.AMPLIFY_GITHUB_TOKEN }}"\
             -var db_password="${{ secrets.DB_PASSWORD }}" \
             -var ecs_execution_role_arn="${{ secrets.ECS_EXECUTION_ROLE_ARN }}"
