@@ -1,5 +1,6 @@
 # Licita Gestor Infrastructure
 
+
 This repository manages the **Licita Gestor** infrastructure using [Terraform](https://www.terraform.io). We use GitHub Actions with OpenID Connect (OIDC) for secure, keyless CI/CD deployments, and a local `.env.local` file for development. This approach keeps sensitive credentials out of version control while ensuring consistency across environments.
 
 ## Table of Contents
