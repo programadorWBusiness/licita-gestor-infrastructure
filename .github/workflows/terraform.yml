@@ -27,17 +27,11 @@ jobs:
           role-to-assume: arn:aws:iam::533267284248:role/CI-CD-FLOW
           aws-region: us-east-1
 
-      - name: Terraform init
-        run: terraform init
-
-      - name: Terraform validate
-        run: terraform validate
-
       - name: Debug token length
         run: |
-          echo "Length of AMPLIFY_GITHUB_TOKEN: ${#AMPLIFY_GITHUB_TOKEN}"
+          echo "Length of AMPLIFY_DB_PASSWORD: ${#AMPLIFY_DB_PASSWORD}"
         env:
-          AMPLIFY_GITHUB_TOKEN: ${{ secrets.DB_PASSWORD }}
+          AMPLIFY_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
       - name: Debug password length
         run: |
@@ -45,17 +39,31 @@ jobs:
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
+      - name: Terraform init
+        run: terraform init
+
+      - name: Terraform validate
+        run: terraform validate
+
       - name: Terraform plan
         run: |
           terraform plan -input=false \
-            -var github_token="${{ secrets.AMPLIFY_GITHUB_TOKEN }}" \
-            -var db_password="${{ secrets.DB_PASSWORD }}" \
-            -var ecs_execution_role_arn="${{ secrets.ECS_EXECUTION_ROLE_ARN }}"
+            -var github_token="${{ env.AMPLIFY_GITHUB_TOKEN }}" \
+            -var db_password="${{ env.DB_PASSWORD }}" \
+            -var ecs_execution_role_arn="${{ env.ECS_EXECUTION_ROLE_ARN }}"
+        env:
+          AMPLIFY_GITHUB_TOKEN: ${{ secrets.AMPLIFY_GITHUB_TOKEN }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          ECS_EXECUTION_ROLE_ARN: ${{ secrets.ECS_EXECUTION_ROLE_ARN }}
 
       - name: Terraform apply
         if: github.event_name == 'push' && github.ref_name == 'main'
         run: |
           terraform apply -auto-approve -input=false \
-            -var github_token="${{ secrets.AMPLIFY_GITHUB_TOKEN }}"\
-            -var db_password="${{ secrets.DB_PASSWORD }}" \
-            -var ecs_execution_role_arn="${{ secrets.ECS_EXECUTION_ROLE_ARN }}"
+            -var github_token="${{ env.AMPLIFY_GITHUB_TOKEN }}"\
+            -var db_password="${{ env.DB_PASSWORD }}" \
+            -var ecs_execution_role_arn="${{ env.ECS_EXECUTION_ROLE_ARN }}"
+        env:
+          AMPLIFY_GITHUB_TOKEN: ${{ secrets.AMPLIFY_GITHUB_TOKEN }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          ECS_EXECUTION_ROLE_ARN: ${{ secrets.ECS_EXECUTION_ROLE_ARN }}

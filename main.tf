@@ -99,7 +99,7 @@ resource "aws_amplify_app" "frontend" {
   environment_variables = {
     # Example if your NestJS is on port 3000:
     # Provide a placeholder or set once you know the ECS task’s public IP
-    REACT_APP_BACKEND_URL = "http://api.licitagestor.com.br"
+    NEST_APP_API_BASE_URL = "http://api.licitagestor.com.br"
   }
 
   tags = {
@@ -134,5 +134,5 @@ resource "aws_route53_record" "api_backend" {
   name    = "api.licitagestor.com.br"
   type    = "A"
   ttl     = 300
-  records = ["3.211.xxx.xxx"]  # <--- The public IP found in ECS console
+  records = ["0.0.0.0"]  # <--- The public IP found in ECS console
 }
